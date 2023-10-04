@@ -4,8 +4,10 @@ LD = ld
 SRC = src
 BUILD = build
 EXECUTABLE_NAME = executable.bin
+TARGETS = $(SRC)/lib/malloc.asm
+OUTPUTS = $(BUILD)/malloc.o
 
-array:
-	$(CC) $(CC_FLAGS) $(SRC)/array.asm -o $(BUILD)/array.o
-	$(LD) -o $(BUILD)/$(EXECUTABLE_NAME) $(BUILD)/array.o
+all:
+	$(CC) $(CC_FLAGS) $(TARGETS) -o $(OUTPUTS)
+	$(LD) -o $(BUILD)/$(EXECUTABLE_NAME) $(OUTPUTS)
 	./$(BUILD)/$(EXECUTABLE_NAME)
