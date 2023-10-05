@@ -1,8 +1,5 @@
-;; This file is not meant to be ran
-;; registers EBX ESI EDI EBP are callee saved
-;; the callee can freely use EAX ECX EDX while eax is the return value
-
 %define SYS_MMAP 9
+%define SYS_EXIT 60
 %define SYS_MUNMAP 11
 
 %define ADDRESS_ANY 0x0
@@ -37,25 +34,30 @@ section .text
 
 global _start
 _start:
-    push 8
+    push 8 ;; malloc 8 bytes
     call _malloc
     add rsp, 8 ;; cleanup stack
-    ;; return value in rax
-    push 8
-    push rax
+
+    ;; return value in rax (address of malloced space)
+    push 8 ;; argument 2 - len
+    push rax ;; argument 1 - address
     call _free
     add rsp, 16 ;; cleanup stack
 
-    mov rax, 60    ; syscall number for exit in 64-bit
-    mov rdi, 0   ; exit code 0
+    mov rax, SYS_EXIT
+    mov rdi, 0
     syscall
 
+;; PARAMS:
+;;   [bytes to allocate]
+;; RETURNS:
+;;   [address of malloced space]
 _malloc:
     cdecl_before_func
 
     mov rax, SYS_MMAP
     mov rdi, ADDRESS_ANY
-    mov rsi, [rbp]
+    mov rsi, [rbp] ;; Length 
     mov rdx, 0 ;; Reset rdx
     or rdx, PROT_READ
     or rdx, PROT_WRITE
@@ -64,21 +66,25 @@ _malloc:
     or r10, MAP_PRIVATE
     mov r8, NO_FD
     mov r9, 0
+
+    syscall
     
     cdecl_after_func
 
     ret
 
-;; addr, len
-;; len - rbp
-;; addr - rbp + 8
-
+;; PARAMS:
+;;   [address of space] [byte len]
+;; RETURNS:
+;;   none
 _free:
     cdecl_before_func
 
     mov rax, SYS_MUNMAP
     mov rdi, [rbp] ;; First argument (addr)
     mov rsi, [rbp + 8] ;; Second argument (len)
+
+    syscall
 
     cdecl_after_func
 
