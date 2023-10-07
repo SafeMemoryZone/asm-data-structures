@@ -15,45 +15,18 @@
 %define MAP_PRIVATE        0x02
 %define MAP_FIXED        0x10
 
-%macro cdecl_before_func 0
-    push rbp
-    push rdi
-    push rsi
-    push rbx
-    mov rbp, rsp
-%endmacro
-
-%macro cdecl_after_func 0
-    pop rbx
-    pop rsi
-    pop rdi
-    pop rbp
-%endmacro
-
 section .text
 
-global _start
-_start:
-    push 8 ;; malloc 8 bytes
-    call _malloc
-    add rsp, 8 ;; cleanup stack
-
-    ;; return value in rax (address of malloced space)
-    push 8 ;; argument 2 - len
-    push rax ;; argument 1 - address
-    call _free
-    add rsp, 16 ;; cleanup stack
-
-    mov rax, SYS_EXIT
-    mov rdi, 0
-    syscall
+.global _malloc
+.global _free
 
 ;; PARAMS:
 ;;   [bytes to allocate]
 ;; RETURNS:
 ;;   [address of malloced space]
 _malloc:
-    cdecl_before_func
+    push rbp
+    mov rbp, rsp
 
     mov rax, SYS_MMAP
     mov rdi, ADDRESS_ANY
@@ -69,7 +42,7 @@ _malloc:
 
     syscall
     
-    cdecl_after_func
+    pop rbp
 
     ret
 
@@ -78,7 +51,8 @@ _malloc:
 ;; RETURNS:
 ;;   none
 _free:
-    cdecl_before_func
+    push rbp
+    mov rbp, rsp
 
     mov rax, SYS_MUNMAP
     mov rdi, [rbp] ;; First argument (addr)
@@ -86,6 +60,6 @@ _free:
 
     syscall
 
-    cdecl_after_func
+    pop rbp
 
     ret
