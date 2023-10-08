@@ -3,7 +3,7 @@
 This repository contains the implementation of common data structures, written in Assembly Language, as part of a personal challenge. The goal is to understand the inner workings and design of fundamental data structures at a low level.
 
 ### 🧪 Testing
-All functions are tested using C. That's why my code adheres to the x86_64 cdecl calling convention, which are as follows:
+All functions are tested using C. That's why my code adheres to the x86_64 cdecl calling convention, which is as follows:
 
 * Registers rdi, rsi, rdx, rcx, r8, r9, r10, r11 are caller saved (rdi through r9 are parameters)
 
