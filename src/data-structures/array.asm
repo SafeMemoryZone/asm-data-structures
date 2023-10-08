@@ -1,30 +1,17 @@
 section .text
 
-.global _new_arr
+%define ARR_HEADER_SIZE 8
+%define ARR_ELEMENT_SIZE 8
+
+.global _arr_new
+.global _arr_append
 .extern _malloc
 .extern _free
 
-;; PARAMS:
-;;   [element size in bytes]
-;; RETURNS:
-;;   [array pointer] (should only be used by array.asm)
-_new_arr:
-    push rbp
-    mov rbp, rsp
+; void *_arr_new()
+_arr_new:
+    ; [TODO]
 
-    add [rsp], 8 ;; header bytes
-
-    call _malloc
-
-    movq [rax], 0 ;; reset memory
-
-    ;; make header
-    ;; [0 - 32] idx, [0 - 32 capacity]
-    mov rdi, 0
-    sub [rsp], 8
-    or rdi, [rsp]
-    shl rdi
-
-    pop rbp
-
-    ret
+; void *_arr_append(void *ptr, unsigned long long value)
+_arr_append:
+    ; [TODO]
