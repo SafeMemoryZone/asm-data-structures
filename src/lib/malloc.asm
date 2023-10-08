@@ -20,21 +20,23 @@ section .text
 .global _malloc
 .global _free
 
-;; PARAMS:
-;;   [bytes to allocate]
-;; RETURNS:
-;;   [address of malloced space]
+; PARAMS:
+;   unsigned long long length
+; RETURNS:
+;   void *
 _malloc:
     push rbp
     mov rbp, rsp
 
+    mov rsi, rdi ; Length 
+
     mov rax, SYS_MMAP
     mov rdi, ADDRESS_ANY
-    mov rsi, [rbp] ;; Length 
-    mov rdx, 0 ;; Reset rdx
+    
+    mov rdx, 0 ; Reset rdx
     or rdx, PROT_READ
     or rdx, PROT_WRITE
-    mov r10, 0 ;; reset r10
+    mov r10, 0 ; reset r10
     or r10, MAP_ANONYMOUS
     or r10, MAP_PRIVATE
     mov r8, NO_FD
@@ -46,18 +48,18 @@ _malloc:
 
     ret
 
-;; PARAMS:
-;;   [address of space] [byte len]
-;; RETURNS:
-;;   none
+; PARAMS:
+;   void *ptr, unsigned long long length
+; RETURNS:
+;   void
 _free:
     push rbp
+
     mov rbp, rsp
 
     mov rax, SYS_MUNMAP
-    mov rdi, [rbp] ;; First argument (addr)
-    mov rsi, [rbp + 8] ;; Second argument (len)
 
+    ; all other arguments are already in the correct registers
     syscall
 
     pop rbp
