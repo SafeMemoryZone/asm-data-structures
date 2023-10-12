@@ -5,7 +5,7 @@ CC_FLAGS = -c -m64 -Wall -g -Werror
 LD = gcc
 SRC = src
 BUILD = build
-EXECUTABLE_NAME = out
+EXECUTABLE_NAME = a.out
 
 test:
 	$(CC) $(CC_FLAGS) -c -o $(BUILD)/test.o $(SRC)/test/main.c
