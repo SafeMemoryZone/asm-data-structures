@@ -19,6 +19,7 @@ section .text
 
 global _malloc
 global _free
+global _memcpy
 
 ; void *_malloc(unsigned long long length)
 _malloc:
@@ -59,3 +60,23 @@ _free:
     pop rbp
 
     ret
+
+; void _memcpy(void *dest, void *src, unsigned long long length)
+_memcpy:
+    push rbp
+    mov rbp, rsp
+    
+    mov r8, 0 ; counter
+    .loop:
+        cmp r8, rdx
+        je .done
+
+        mov r9, [rsi + r8 * 8] ; source
+        mov [rdi + r8 * 8], r9 ; move source into destination
+
+        inc r8
+        
+    .done:
+        pop rbp
+        
+        ret
