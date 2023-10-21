@@ -25,15 +25,15 @@ pop rdi
 %endmacro
 
 global _arr_new
+global _arr_append
+global _arr_pop
+
 extern _malloc
 extern _free
 extern _memcpy
 
 ; void *_arr_new()
 _arr_new:
-    push rbp
-    mov rbp, rsp
-
     ; create an array header
 
     ; 64         32        0
@@ -41,19 +41,14 @@ _arr_new:
     ; | INDEX |  CAPACITY  |     
     ; ----------------------
 
-    mov rdi, ARR_HEADER_SIZE
+    mov rdi, ARR_HEADER_SIZE + 8 ; add one element
     call _malloc ; it doesn't matter that it overwrites other registers
-    mov [rax], 0 ; reset array header to set capacity and idx to 0
-
-    pop rbp
+    mov qword [rax], 1 ; reset array header to set capacity to 1 and idx to 0
 
     ret
 
-; void *_arr_append(void *ptr, unsigned long long value)
+; void _arr_append(void *ptr, unsigned long long value)
 _arr_append:
-    push rbp
-    mov rbp, rsp
-
     ; rdi contains ptr and rsi contains the value to append
     mov r8, [rdi] ; read value of rdi into r8
     and r8, 0xFFFFFFFF ; clean the rest of the bits
@@ -63,46 +58,45 @@ _arr_append:
 
     ; at this point r8 contains the capacity and r9 contains the index 
     cmp r9, r8
-    jl .append ; skip expanding if the element can fit
+    jbe .append ; skip expanding if the element can fit
 
-    ; here, we expand the array
-
-    ; malloc new array
+    imul r8, 2 ; double the capacity
     CALLER_PUSH_REGISTERS
-    mul r8, 2 ; double the capacity
-    mov rdi, r8 ; doubled capacity is the length
+    add r8, ARR_HEADER_SIZE
+    mov rdi, r8 ; length
     call _malloc
     CALLER_POP_REGISTERS
-    ; new array is in rax
+    ; now rax contains new array
+    ; void _memcpy(void *dest, void *src, unsigned long long length)
     CALLER_PUSH_REGISTERS
-    mov rsi, rdi
-    add rax, 8 ; skip header
-    mov rdi, rax
+    lea rsi, [rdi + ARR_HEADER_SIZE]
+    lea rdi, [rax + ARR_HEADER_SIZE]
     mov rdx, r8
     call _memcpy
     CALLER_POP_REGISTERS
-    ; free the old array
-    push rsi
-    mov rsi, r8 ; second argument is capacity. First argument (ptr) is already in rdi
-    call _free
-    pop rsi
-    
-    mov rdi, rax ; update array ptr
-    ; at this point, the index in header is not updated yet
 
-    mul r8, 2
-    mov [rdi], 0
-    or [rdi], r8  ; update capacity
+    push rax
+    call _free
+    pop rax
+    mov rdi, rax
+
+    mov [rdi], r8 ; write back new capacity
 
     .append:
-        mov [rdi + 8 + r9], rsi ; append value
-        inc r9
-        mov r10, [rdi] ; move header into r10
-        rol r10, 32 ; so we get index on the left side
-        or r10, r9
+        mov [rdi + ARR_HEADER_SIZE + 8 * r9], rsi ; element
+        inc r9 ; update index
+        mov dword [rdi], r9d ; write index back 
 
-        mov [rdi], r10 ; write updated header back
+    ret
 
-    pop rbp
+; unsigned long long _arr_pop(void *ptr)
+_arr_pop:
+    mov r8, [rdi]
+    shr r8, 32
+    mov rax, [rdi + ARR_HEADER_SIZE + r8]
+    dec r8
+    shl r8, 32
+    and qword [rdi], 0xFFFFFFFF
+    or [rdi], r8
 
     ret

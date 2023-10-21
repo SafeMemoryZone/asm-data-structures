@@ -23,9 +23,6 @@ global _memcpy
 
 ; void *_malloc(unsigned long long length)
 _malloc:
-    push rbp
-    mov rbp, rsp
-
     mov rsi, rdi ; Length 
 
     mov rax, SYS_MMAP
@@ -41,31 +38,19 @@ _malloc:
     mov r9, 0
 
     syscall
-    
-    pop rbp
 
     ret
 
 ; void _free(void *ptr, unsigned long long length)
 _free:
-    push rbp
-
-    mov rbp, rsp
-
     mov rax, SYS_MUNMAP
-
     ; all other arguments are already in the correct registers
     syscall
-
-    pop rbp
 
     ret
 
 ; void _memcpy(void *dest, void *src, unsigned long long length)
 _memcpy:
-    push rbp
-    mov rbp, rsp
-    
     mov r8, 0 ; counter
     .loop:
         cmp r8, rdx
@@ -77,6 +62,4 @@ _memcpy:
         inc r8
         
     .done:
-        pop rbp
-        
         ret
