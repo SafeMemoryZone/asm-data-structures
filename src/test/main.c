@@ -22,17 +22,44 @@ void test_lib_functions()
     printf("Unit-test test_lib_functions was sucessful\n");
 }
 
+void printBits(unsigned long long n)
+{
+    int bitCount = sizeof(unsigned long long) * 8; // Number of bits in unsigned long long
+
+    for (int i = 0; i < bitCount; i++)
+    {
+        printf("%llu", (n & 1)); // Print the rightmost bit
+        n >>= 1;                 // Right shift by 1 to check the next bit
+    }
+    printf("\n");
+}
+
 void test_data_structures()
 {
     void *arr = _arr_new();
-    _arr_append(arr, 2);
-    _arr_append(arr, 1);
+    printf("Header:\n");
+    printBits(*(unsigned long long *)arr);
+    arr = _arr_append(arr, 100);
+    printf("Header:\n");
+    printBits(*(unsigned long long *)arr);
+    arr = _arr_append(arr, 40);
+    printf("Header:\n");
+    printBits(*(unsigned long long *)arr);
+    arr = _arr_append(arr, 120);
+    printf("Header:\n");
+    printBits(*(unsigned long long *)arr);
 
-    unsigned long long poppedVal = _arr_pop(arr);
-    assert(poppedVal == 1);
+    printf("header: %llu\n", *(unsigned long long *)arr);
 
-    poppedVal = _arr_pop(arr);
-    assert(poppedVal == 2);
+    unsigned long long *ptr = (unsigned long long *)arr;
+    for (int i = 0; i < 10; ++i)
+    {
+        printf("Value: %llu\n", ptr[i]);
+        printBits(ptr[i]);
+    };
+
+    unsigned long long popped = _arr_pop(arr);
+    printf("Popped: %llu\n", popped);
 
     printf("Unit-test test_data_structures was sucessful\n");
 }

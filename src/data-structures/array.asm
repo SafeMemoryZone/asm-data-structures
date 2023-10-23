@@ -47,9 +47,8 @@ _arr_new:
 
     ret
 
-; void _arr_append(void *ptr, unsigned long long value)
+; void *_arr_append(void *ptr, unsigned long long value)
 _arr_append:
-    ; rdi contains ptr and rsi contains the value to append
     mov r8, [rdi] ; read value of rdi into r8
     and r8, 0xFFFFFFFF ; clean the rest of the bits
 
@@ -58,9 +57,10 @@ _arr_append:
 
     ; at this point r8 contains the capacity and r9 contains the index 
     cmp r9, r8
-    jbe .append ; skip expanding if the element can fit
+    je .append ; skip expanding if the element can fit
 
     imul r8, 2 ; double the capacity
+
     CALLER_PUSH_REGISTERS
     add r8, ARR_HEADER_SIZE
     mov rdi, r8 ; length
@@ -80,12 +80,14 @@ _arr_append:
     pop rax
     mov rdi, rax
 
-    mov [rdi], r8 ; write back new capacity
+    mov dword [rdi], r8d ; write back new capacity
 
     .append:
         mov [rdi + ARR_HEADER_SIZE + 8 * r9], rsi ; element
         inc r9 ; update index
-        mov dword [rdi], r9d ; write index back 
+        shl r9, 32
+        and qword [rdi], 0xFFFFFFFF
+        or qword [rdi], r9
 
     ret
 
@@ -93,8 +95,11 @@ _arr_append:
 _arr_pop:
     mov r8, [rdi]
     shr r8, 32
-    mov rax, [rdi + ARR_HEADER_SIZE + r8]
     dec r8
+
+    mov rax, [rdi + ARR_HEADER_SIZE + r8 * 8 - 8]
+    mov rax, r8
+
     shl r8, 32
     and qword [rdi], 0xFFFFFFFF
     or [rdi], r8

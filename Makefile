@@ -1,5 +1,5 @@
 ASM = nasm
-ASM_FLAGS = -f elf64
+ASM_FLAGS = -f elf64 -g
 CC = gcc
 CC_FLAGS = -c -m64 -Wall -g -Werror
 LD = gcc
